@@ -1,0 +1,72 @@
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten, Dropout
+from tensorflow.keras.utils import to_categorical
+import matplotlib.pyplot as plt
+
+# Load MNIST dataset
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+# Normalize the images
+x_train = x_train / 255.0
+x_test = x_test / 255.0
+
+# One-hot encode the labels
+y_train = to_categorical(y_train, 10)
+y_test = to_categorical(y_test, 10)
+
+# Build the neural network
+model = Sequential([
+    Flatten(input_shape=(28, 28)),
+    Dense(512, activation='relu'),
+    Dropout(0.2),
+    Dense(256, activation='relu'),
+    Dropout(0.2),
+    Dense(10, activation='softmax')
+])
+
+# Compile the model
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Train the model
+history = model.fit(x_train, y_train,
+                    epochs=10,
+                    batch_size=128,
+                    validation_split=0.1)
+
+# Evaluate the model
+test_loss, test_acc = model.evaluate(x_test, y_test, verbose=0)
+print(f"\nTest accuracy: {test_acc:.4f}")
+
+# Plot accuracy and loss graphs
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Accuracy over Epochs')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.title('Loss over Epochs')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.show()
+
+# Predict and visualize a few test samples
+import numpy as np
+
+predictions = model.predict(x_test)
+for i in range(5):
+    plt.imshow(x_test[i], cmap='gray')
+    plt.title(f"Predicted: {np.argmax(predictions[i])}")
+    plt.show()
