@@ -1,115 +1,148 @@
 import tensorflow as tf
-from tensorflow.keras.datasets import mnist
-from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropout, BatchNormalization
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
-import matplotlib.pyplot as plt
 import numpy as np
-import os
+import matplotlib.pyplot as plt
 
-# Set random seeds for reproducibility
-np.random.seed(42)
-tf.random.set_seed(42)
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten, Dropout
+from tensorflow.keras.utils import to_categorical
 
-# Load MNIST dataset
+
+# -----------------------------
+# 1. Load MNIST Dataset
+# -----------------------------
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-# Reshape data to include channel dimension
-x_train = x_train.reshape(-1, 28, 28, 1).astype('float32') / 255.0
-x_test = x_test.reshape(-1, 28, 28, 1).astype('float32') / 255.0
+print("Loading MNIST dataset...")
+print("Training samples:", len(x_train))
+print("Testing samples:", len(x_test))
 
-# One-hot encode labels
+
+# -----------------------------
+# 2. Normalize Images
+# -----------------------------
+x_train = x_train.astype("float32") / 255.0
+x_test = x_test.astype("float32") / 255.0
+
+
+# -----------------------------
+# 3. Encode Labels
+# -----------------------------
 y_train = to_categorical(y_train, 10)
 y_test = to_categorical(y_test, 10)
 
-# Data augmentation
-datagen = ImageDataGenerator(
-    rotation_range=10,
-    zoom_range=0.1,
-    width_shift_range=0.1,
-    height_shift_range=0.1
-)
-datagen.fit(x_train)
 
-# Build CNN model
+# -----------------------------
+# 4. Build Neural Network
+# -----------------------------
 model = Sequential([
-    Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
-    BatchNormalization(),
-    Conv2D(32, (3, 3), activation='relu'),
-    BatchNormalization(),
-    MaxPooling2D(pool_size=(2, 2)),
-    Dropout(0.25),
+    Flatten(input_shape=(28, 28)),
 
-    Conv2D(64, (3, 3), activation='relu'),
-    BatchNormalization(),
-    Conv2D(64, (3, 3), activation='relu'),
-    BatchNormalization(),
-    MaxPooling2D(pool_size=(2, 2)),
-    Dropout(0.25),
+    Dense(512, activation="relu"),
+    Dropout(0.2),
 
-    Flatten(),
-    Dense(256, activation='relu'),
-    BatchNormalization(),
-    Dropout(0.5),
-    Dense(10, activation='softmax')
+    Dense(256, activation="relu"),
+    Dropout(0.2),
+
+    Dense(10, activation="softmax")
 ])
 
-# Compile the model
-model.compile(optimizer='adam',
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
 
-# Callbacks
-checkpoint_path = 'best_mnist_model.h5'
-checkpoint = ModelCheckpoint(checkpoint_path, monitor='val_accuracy', save_best_only=True, verbose=1)
-early_stop = EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
+# -----------------------------
+# 5. Compile Model
+# -----------------------------
+model.compile(
+    optimizer="adam",
+    loss="categorical_crossentropy",
+    metrics=["accuracy"]
+)
 
-# Train the model
-history = model.fit(datagen.flow(x_train, y_train, batch_size=128),
-                    epochs=30,
-                    validation_data=(x_test, y_test),
-                    callbacks=[checkpoint, early_stop])
+print("\nModel Architecture:")
+model.summary()
 
-# Load the best model
-model = load_model(checkpoint_path)
 
-# Evaluate on test set
-test_loss, test_acc = model.evaluate(x_test, y_test, verbose=0)
-print(f"\nBest Test Accuracy: {test_acc:.4f}")
+# -----------------------------
+# 6. Train Model
+# -----------------------------
+print("\nStarting model training...")
 
-# Plot accuracy and loss
+history = model.fit(
+    x_train,
+    y_train,
+    epochs=10,
+    batch_size=128,
+    validation_split=0.1
+)
+
+
+# -----------------------------
+# 7. Evaluate Model
+# -----------------------------
+test_loss, test_accuracy = model.evaluate(
+    x_test,
+    y_test,
+    verbose=0
+)
+
+print("\n-----------------------------")
+print("MNIST Digit Recognition")
+print("-----------------------------")
+print(f"Test Accuracy: {test_accuracy:.4f}")
+print(f"Test Loss: {test_loss:.4f}")
+print("-----------------------------")
+
+
+# -----------------------------
+# 8. Plot Accuracy and Loss
+# -----------------------------
 plt.figure(figsize=(12, 5))
 
 plt.subplot(1, 2, 1)
-plt.plot(history.history['accuracy'], label='Train Accuracy')
-plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
-plt.title('Accuracy over Epochs')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
+plt.plot(
+    history.history["accuracy"],
+    label="Training Accuracy"
+)
+plt.plot(
+    history.history["val_accuracy"],
+    label="Validation Accuracy"
+)
+plt.title("Accuracy over Epochs")
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
 plt.legend()
+
 
 plt.subplot(1, 2, 2)
-plt.plot(history.history['loss'], label='Train Loss')
-plt.plot(history.history['val_loss'], label='Validation Loss')
-plt.title('Loss over Epochs')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
+plt.plot(
+    history.history["loss"],
+    label="Training Loss"
+)
+plt.plot(
+    history.history["val_loss"],
+    label="Validation Loss"
+)
+plt.title("Loss over Epochs")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
 plt.legend()
 
+plt.tight_layout()
 plt.show()
 
-# Predict and show some test examples
+
+# -----------------------------
+# 9. Predict Test Images
+# -----------------------------
 predictions = model.predict(x_test)
 
-for i in range(10):
-    plt.imshow(x_test[i].reshape(28, 28), cmap='gray')
-    plt.title(f"Predicted: {np.argmax(predictions[i])} | True: {np.argmax(y_test[i])}")
-    plt.axis('off')
-    plt.show()
 
-# Save final model
-final_model_path = 'final_mnist_cnn_model.h5'
-model.save(final_model_path)
-print(f"Model saved to {final_model_path}")
+# -----------------------------
+# 10. Display Predictions
+# -----------------------------
+for i in range(5):
+
+    predicted_digit = np.argmax(predictions[i])
+    actual_digit = np.argmax(y_test[i])
+
+    plt.imshow(x_test[i], cmap="gray")
+    plt
