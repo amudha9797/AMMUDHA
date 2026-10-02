@@ -1,19 +1,20 @@
-# Handwritten Digit Recognition using Deep Learning
+# Handwritten Digit Recognition using CNN
 
 ## 📌 Project Overview
 
 This project implements a handwritten digit recognition system using
-Deep Learning with TensorFlow and Keras.
+Convolutional Neural Networks (CNN) with TensorFlow and Keras.
 
-The model is trained on the **MNIST handwritten digit dataset** to
-recognize digits from **0 to 9**.
+The model is trained using the MNIST dataset to recognize handwritten
+digits from 0 to 9.
 
 ## 🎯 Objectives
 
-- Recognize handwritten digits automatically.
-- Train a neural network using the MNIST dataset.
-- Evaluate the model using test accuracy.
-- Visualize training accuracy and loss.
+- Recognize handwritten digits using Deep Learning.
+- Train a CNN model using the MNIST dataset.
+- Improve image recognition using convolutional layers.
+- Evaluate the trained model using test accuracy.
+- Visualize training and validation performance.
 - Display predicted digit results.
 
 ## 🛠️ Technologies Used
@@ -25,37 +26,43 @@ recognize digits from **0 to 9**.
 - Matplotlib
 - MNIST Dataset
 
-## 🧠 Model Architecture
+## 🧠 CNN Model Architecture
 
-The neural network consists of:
+The model contains:
 
-- Flatten Layer – converts 28×28 images into a single vector
-- Dense Layer – 512 neurons with ReLU activation
-- Dropout – 20%
-- Dense Layer – 256 neurons with ReLU activation
-- Dropout – 20%
-- Output Layer – 10 neurons with Softmax activation
+- Convolutional Layers
+- Batch Normalization
+- Max Pooling
+- Dropout
+- Flatten Layer
+- Fully Connected Dense Layer
+- Softmax Output Layer
+
+The output layer contains 10 neurons representing digits 0 to 9.
 
 ## 📊 Dataset
 
-The project uses the **MNIST handwritten digit dataset**.
+The project uses the MNIST handwritten digit dataset.
 
 - Training samples: 60,000
-- Test samples: 10,000
+- Testing samples: 10,000
 - Image size: 28 × 28 pixels
-- Classes: 10 digits (0–9)
+- Number of classes: 10
+- Classes: 0–9
 
 ## ⚙️ Project Workflow
 
 1. Load the MNIST dataset.
 2. Normalize image pixel values.
-3. Convert labels into categorical format.
-4. Build the neural network.
-5. Compile the model using Adam optimizer.
-6. Train the model.
-7. Evaluate test accuracy.
-8. Generate accuracy and loss graphs.
-9. Predict handwritten digits.
+3. Reshape images for CNN processing.
+4. Apply data augmentation.
+5. Build the CNN model.
+6. Compile the model using Adam optimizer.
+7. Train the model.
+8. Save the best model.
+9. Evaluate the model.
+10. Generate predictions.
+11. Visualize accuracy and loss.
 
 ## 📁 Project Structure
 
@@ -63,14 +70,12 @@ The project uses the **MNIST handwritten digit dataset**.
 AMMUDHA/
 │
 ├── README.md
-├── source-code/
-│   └── mnist_digit_recognition.py
+├── requirements.txt
+│
+├── source code/
+│   └── MNIST CNN source code
 │
 ├── dataset/
-│   └── README.md
 │
-├── output/
-│   ├── accuracy_loss_graph.png
-│   └── predictions.png
-│
-└── requirements.txt
+└── output/
+    └── Training and prediction results
